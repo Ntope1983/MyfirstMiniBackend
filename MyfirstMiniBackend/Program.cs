@@ -16,8 +16,6 @@ public class Middleware
     }
 }
 
-// Παράδειγμα χρήσης
-// ========================
 // Program
 // ========================
 public class Program
@@ -31,10 +29,11 @@ public class Program
     }
     static void Menu()
     {
-        //PcNtope string jsonData = File.ReadAllText(@"C:\Users\g_pol\source\repos\C#\ExercisesLevel7\ExercisesLevel7\deserializeProduct.json");
-
-        string jsonData = File.ReadAllText(@"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json");//Json File Product records
-        var productList = JsonSerializer.Deserialize<List<Product>>(jsonData);//save in a Product List
+        //HomePc path
+        string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
+        //PcWork Path
+        // string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
+        List<Product> productList = DeSerializeListProductsFromJson(path);
         IProductRepository MyRepository = new InMemoryProductRepository();
         foreach (Product item in productList)//Add products in InMemoryProductRepository 
         {
@@ -42,7 +41,7 @@ public class Program
         }
         IProductService productService = new ProductService(MyRepository);
 
-        string menu = "Please select an operation:\n" +
+        string startMenu = "Please select an operation:\n" +
                       "1. Create Product\n" +
                       "2. Read Products\n" +
                       "3. Update Product By id\n" +
@@ -53,13 +52,13 @@ public class Program
 
         while (true)
         {
-            Console.WriteLine(menu);
-            string choice = Console.ReadLine();
+            Console.WriteLine(startMenu);
+            string choiceStartMenu = Console.ReadLine();
 
-            while (!int.TryParse(choice, out menuValue))
+            while (!int.TryParse(choiceStartMenu, out menuValue))
             {
                 Console.WriteLine("Please give an integer 1-5");
-                choice = Console.ReadLine();
+                choiceStartMenu = Console.ReadLine();
             }
 
             if (menuValue == 5) break;// Exit Choice
@@ -78,6 +77,7 @@ public class Program
                     }
 
                     productService.AddProduct(name, price);
+                    SerializeListProductsAndSaveToJson(path, productService.GetAllProducts());
                     break;
                 case 2: // Read Products
                     foreach (var product in productService.GetAllProducts())
@@ -87,7 +87,30 @@ public class Program
                     break;
 
 
-                    caqse 3: // Update Product with id
+                case 3: // Update Product with id
+                    Console.WriteLine("Enter the id of the product to Update:");
+                    int idToUpdate;
+                    while (!int.TryParse(Console.ReadLine(), out idToUpdate))
+                    {
+                        Console.WriteLine("Please enter a valid integer.");
+                    }
+                    Product productToUpdate = productService.GetProductById(idToUpdate);
+                    if (productToUpdate is null)
+                    {
+                        Console.WriteLine("The Product id you entered doesnt exist");
+                    }
+                    else
+                    {
+                        string menuUpdate = "Please select a field to update:\n" +
+                      "1. Update Name\n" +
+                      "2. Update Price\n" +
+                      "3. Both\n" +
+                      "4. Return To Start Menu\n";
+                    }
+
+                    break;
+
+                case 4: // Delete Product with id
                     Console.WriteLine("Enter the id of the product to delete:");
                     int idToDelete;
                     while (!int.TryParse(Console.ReadLine(), out idToDelete))
@@ -96,6 +119,7 @@ public class Program
                     }
 
                     productService.DeleteProduct(idToDelete);
+                    SerializeListProductsAndSaveToJson(path, productService.GetAllProducts());
                     break;
 
                 default:
@@ -104,6 +128,28 @@ public class Program
             }
         }
     }
+
+    public static List<Product> DeSerializeListProductsFromJson(string path)
+    {
+
+        string jsonData = File.ReadAllText(path);
+        List<Product> productList = JsonSerializer.Deserialize<List<Product>>(jsonData);//save in a Product List
+        return productList;
+
+    }
+    public static void SerializeListProductsAndSaveToJson(string path, IEnumerable<Product> products)
+    {
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true//Save in different line be more readable
+        };
+
+        string json = JsonSerializer.Serialize(products, options);
+
+        File.WriteAllText(path, json);
+    }
+
 }
 
 

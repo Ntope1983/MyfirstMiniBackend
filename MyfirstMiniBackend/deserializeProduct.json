@@ -38,5 +38,20 @@
     "productId": 8,
     "productName": "Webcam Full HD",
     "productPrice": 54.20
+  },
+  {
+    "productId": 9,
+    "productName": "XiaomiRedmiNotePro8",
+    "productPrice": 1232
+  },
+  {
+    "productId": 10,
+    "productName": "PocoPhone12",
+    "productPrice": 180
+  },
+  {
+    "productId": 11,
+    "productName": "DellPoweredgeT40",
+    "productPrice": 1200
   }
 ]
