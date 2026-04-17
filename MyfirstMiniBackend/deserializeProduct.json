@@ -48,5 +48,10 @@
     "productId": 10,
     "productName": "Pocophone13",
     "productPrice": 250
+  },
+  {
+    "productId": 12,
+    "productName": "Pocophone 14",
+    "productPrice": 360
   }
 ]
