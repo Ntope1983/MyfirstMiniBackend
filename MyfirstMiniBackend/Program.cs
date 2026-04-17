@@ -30,9 +30,9 @@ public class Program
     static void Menu()
     {
         //HomePc path
-        string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
+        //string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
         //PcWork Path
-        // string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
+        string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
         List<Product> productList = DeSerializeListProductsFromJson(path);
         IProductRepository MyRepository = new InMemoryProductRepository();
         foreach (Product item in productList)//Add products in InMemoryProductRepository 
@@ -106,6 +106,55 @@ public class Program
                       "2. Update Price\n" +
                       "3. Both\n" +
                       "4. Return To Start Menu\n";
+
+                        while (true)
+                        {
+                            Console.WriteLine(menuUpdate);
+                            string choiceMenuUpdate = Console.ReadLine();
+                            int menuUpdateValue;
+                            while (!int.TryParse(choiceMenuUpdate, out menuUpdateValue))
+                            {
+                                Console.WriteLine("Please give an integer 1-4");
+                                choiceMenuUpdate = Console.ReadLine();
+                            }
+                            if (menuUpdateValue == 1)
+                            {
+                                Console.WriteLine("Enter product name:");
+                                productToUpdate.ProductName = Console.ReadLine();
+
+                            }
+                            else if (menuUpdateValue == 2)
+                            {
+                                Console.WriteLine("Enter product price:");
+                                decimal priceUpdate;
+                                while (!decimal.TryParse(Console.ReadLine(), out priceUpdate))
+                                {
+                                    Console.WriteLine("Please enter a valid decimal number for price.");
+                                }
+                                productToUpdate.ProductPrice = priceUpdate;
+
+                            }
+                            else if (menuUpdateValue == 3)
+                            {
+
+                                Console.WriteLine("Enter product name:");
+                                string nameUpdate = Console.ReadLine();
+                                Console.WriteLine("Enter product price:");
+                                decimal priceUpdate;
+                                while (!decimal.TryParse(Console.ReadLine(), out priceUpdate))
+                                {
+                                    Console.WriteLine("Please enter a valid decimal number for price.");
+                                }
+                                productToUpdate.ProductName = nameUpdate;
+                                productToUpdate.ProductPrice = priceUpdate;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            SerializeListProductsAndSaveToJson(path, productService.GetAllProducts());
+                            break;
+                        }
                     }
 
                     break;
