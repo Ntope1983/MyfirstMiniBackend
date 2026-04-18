@@ -22,4 +22,9 @@ public class ProductService : IProductService
     }
 
     public void DeleteProduct(int id) => _repository.DeleteById(id);
+
+    public void UpdateProduct(int id)
+    {
+        _repository.UpdateById(id);
+    }
 }

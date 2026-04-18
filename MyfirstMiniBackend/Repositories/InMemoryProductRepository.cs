@@ -25,4 +25,18 @@ public class InMemoryProductRepository : IProductRepository
             Console.WriteLine($"The product with id {id} was not found.");
         }
     }
+
+    public void UpdateById(int id)
+    {
+        var product = GetById(id);
+        if (product != null)
+        {
+            //_products.Re;
+            Console.WriteLine($"The product with id {id} has been removed.");
+        }
+        else
+        {
+            Console.WriteLine($"The product with id {id} was not found.");
+        }
+    }
 }
