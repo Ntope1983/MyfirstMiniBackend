@@ -23,8 +23,26 @@ public class ProductService : IProductService
 
     public void DeleteProduct(int id) => _repository.DeleteById(id);
 
+<<<<<<< HEAD
     public void UpdateProduct(int id)
     {
         _repository.UpdateById(id);
     }
+=======
+    public void UpdateProduct(int id, string? name, decimal? price)
+    {
+        var product = _repository.GetById(id);
+        if (product == null) return;
+
+        if (name != null)
+            product.ProductName = name;
+
+        if (price.HasValue)
+            product.ProductPrice = price.Value;
+
+        _repository.Update(product);
+    }
+
+
+>>>>>>> 6e5d0ae2bdfb067ffd30dae7721957be82b75663
 }

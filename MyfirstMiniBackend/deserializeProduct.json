@@ -16,8 +16,8 @@
   },
   {
     "productId": 4,
-    "productName": "27 inch Monitor Samsung",
-    "productPrice": 249.99
+    "productName": "32 inch Monitor LG",
+    "productPrice": 350
   },
   {
     "productId": 5,
@@ -46,12 +46,12 @@
   },
   {
     "productId": 10,
-    "productName": "PocoPhone12",
-    "productPrice": 180
+    "productName": "Pocophone13",
+    "productPrice": 250
   },
   {
-    "productId": 11,
-    "productName": "DellPoweredgeT40",
-    "productPrice": 1200
+    "productId": 12,
+    "productName": "Pocophone 14",
+    "productPrice": 360
   }
 ]
