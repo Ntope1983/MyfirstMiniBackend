@@ -1,4 +1,4 @@
-public interface IProductService
+public interface IAccountService
 {
     IEnumerable<Product> GetAllProducts();
     Product? GetProductById(int id);

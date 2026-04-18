@@ -5,10 +5,11 @@ public class Program
 {
     public static void Main()
     {
-        Menu();
+        Authentication_Simulation();
+        StartMenu();
     }
 
-    static void Menu()
+    static void StartMenu()
     {
         //string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
         string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
@@ -64,10 +65,20 @@ public class Program
             }
         }
     }
+    static void Authentication_Simulation()
+    {
+        string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\deserializeProduct.json";
+        Console.WriteLine("\nSelect an option:");
+        Console.WriteLine("1. Login");
+        Console.WriteLine("2. Register");
+        Console.WriteLine("3. Exit");
+
+    }
 
     // =========================
     // CREATE
     // =========================
+
     static void CreateProduct(IProductService service, string path)
     {
         Console.Write("Enter product name: ");

@@ -25,7 +25,6 @@ public class InMemoryProductRepository : IProductRepository
             Console.WriteLine($"The product with id {id} was not found.");
         }
     }
-<<<<<<< HEAD
 
     public void UpdateById(int id)
     {
@@ -40,7 +39,6 @@ public class InMemoryProductRepository : IProductRepository
             Console.WriteLine($"The product with id {id} was not found.");
         }
     }
-=======
     public void Update(Product product)
     {
         var existing = GetById(product.ProductId);
@@ -49,6 +47,4 @@ public class InMemoryProductRepository : IProductRepository
         existing.ProductPrice = product.ProductPrice;
         Console.WriteLine($"The product with id {existing.ProductId} has been Updated.");
     }
-
->>>>>>> 6e5d0ae2bdfb067ffd30dae7721957be82b75663
 }
