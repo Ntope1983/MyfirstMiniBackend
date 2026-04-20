@@ -1,22 +1,28 @@
 ﻿using System.Text.Json;
-// Program
-// ========================
+
 public class Program
 {
     public static void Main()
     {
-        Authentication_Simulation();
-        //StartMenu();
+        // Ξεκινάμε με authentication
+        bool isAuthenticated = Authentication_Simulation();
+
+        // Μόνο αν κάνει login μπαίνει στο σύστημα προϊόντων
+        if (isAuthenticated)
+        {
+            StartMenu();
+        }
     }
 
     static void StartMenu()
     {
-        string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\Products.json";
-        //string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\Products.json";
-        List<Product> productList = LoadProducts(path);
+        // ✔ ΤΩΡΑ: portable path
+        string path = Path.Combine(AppContext.BaseDirectory, "Products.json");
+        List<Product> productList = LoadFromJson<Product>(path);
 
         IProductRepository repository = new InMemoryProductRepository();
 
+        // Φορτώνουμε δεδομένα στο repository
         foreach (var item in productList)
         {
             repository.Add(item);
@@ -65,16 +71,11 @@ public class Program
             }
         }
     }
-    static void Authentication_Simulation()
-    {
-        string path = @"C:\Users\NDF-MO\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\Accounts.json";
-        //string path = @"C:\Users\g_pol\source\repos\Ntope1983\MyfirstMiniBackend\MyfirstMiniBackend\Accounts.json";
-        Console.WriteLine("\nSelect an option:");
-        Console.WriteLine("1. Login");
-        Console.WriteLine("2. Register");
-        Console.WriteLine("3. Exit");
-        List<Account> accountList = LoadAccounts(path);
 
+    static bool Authentication_Simulation()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Accounts.json");
+        List<Account> accountList = LoadFromJson<Account>(path);
         IAccountRepository repository = new InMemoryAccountRepository();
         IAccountService service = new AccountService(repository);
 
@@ -82,102 +83,120 @@ public class Program
         {
             repository.Add(item);
         }
-        int choice;
+
         while (true)
         {
-            while (!int.TryParse(Console.ReadLine(), out choice))
+            Console.WriteLine("\nSelect an option:");
+            Console.WriteLine("1. Login");
+            Console.WriteLine("2. Register");
+            Console.WriteLine("3. Exit");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice))
             {
-                Console.WriteLine("Invalid input.Pls Give again");
+                Console.WriteLine("Invalid input.");
+                continue;
             }
-            if (choice == 3) Environment.Exit(0);
 
             switch (choice)
             {
                 case 1:
-                    LoginAccount(path, service);
+                    if (LoginAccount(service))
+                        return true; // ✔ επιστρέφει στο Main → StartMenu
                     break;
 
                 case 2:
                     CreateAccount(path, service);
                     break;
 
+                case 3:
+                    Environment.Exit(0);
+                    break;
+
                 default:
-                    Console.WriteLine("Invalid choice.Pls Give again");
+                    Console.WriteLine("Invalid choice.");
                     break;
             }
         }
-
     }
 
     private static void CreateAccount(string path, IAccountService service)
     {
-        string? username;
-        string? password;
-        Console.WriteLine("2. Give a Username");
-        username = Console.ReadLine();
-        while (service.GetAccountByUserName(username) is not null)
+        Console.WriteLine("Give a Username:");
+        string? username = Console.ReadLine();
+
+        // ✔ validation
+        if (string.IsNullOrWhiteSpace(username))
         {
-            Console.WriteLine("Username already exist.Pls give another Username");
+            Console.WriteLine("Invalid username.");
+            return;
+        }
+
+        while (service.GetAccountByUserName(username) != null)
+        {
+            Console.WriteLine("Username already exists. Try again:");
             username = Console.ReadLine();
         }
-        Console.WriteLine("2. Give a Password");
-        password = Console.ReadLine();
 
-        // δημιουργία hash
+        Console.WriteLine("Give a Password:");
+        string? password = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Invalid password.");
+            return;
+        }
+
+        // ✔ Hash password (σωστό)
         string hash = BCrypt.Net.BCrypt.HashPassword(password);
+
         service.AddAccount(username, hash);
-        SaveAccounts(path, service.GetAllAccounts());
+
+        SaveToJson(path, service.GetAllAccounts());
+
+        Console.WriteLine("Account created successfully!");
     }
 
-    private static void SaveAccounts(string path, IEnumerable<Account> accounts)
+    private static bool LoginAccount(IAccountService service)
     {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
+        Console.WriteLine("Give a Username:");
+        string? username = Console.ReadLine();
 
-        string json = JsonSerializer.Serialize(accounts, options);
-        File.WriteAllText(path, json);
-    }
+        Console.WriteLine("Give a Password:");
+        string? password = Console.ReadLine();
 
-    private static void LoginAccount(string path, IAccountService service)
-    {
-        string? username;
-        string? Inputpassword;
-        Console.WriteLine("2. Give a Username");
-        username = Console.ReadLine();
-        Console.WriteLine("2. Give a Password");
-        Inputpassword = Console.ReadLine();
-        // έλεγχος
-        Account accountInput = service.GetAccountByUserName(username);
-        while (accountInput == null)
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            Console.WriteLine("2. Give a a Right Username");
-            username = Console.ReadLine();
-            Console.WriteLine("2. Give a Password");
-            Inputpassword = Console.ReadLine();
-            accountInput = service.GetAccountByUserName(username);
+            Console.WriteLine("Invalid input.");
+            return false;
         }
 
-        if (BCrypt.Net.BCrypt.Verify(Inputpassword, accountInput.AccountPassword))
-        {
-            Console.WriteLine("Login Success");
-        }
-        else
+        var account = service.GetAccountByUserName(username);
+
+        // ✔ clean login check
+        if (account == null || !BCrypt.Net.BCrypt.Verify(password, account.AccountPassword))
         {
             Console.WriteLine("Wrong Username or Password");
+            return false;
         }
 
+        Console.WriteLine("Login Success!");
+        return true;
     }
 
     // =========================
-    // CREATE
+    // PRODUCT METHODS
     // =========================
 
     static void CreateProduct(IProductService service, string path)
     {
         Console.Write("Enter product name: ");
         string? name = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            Console.WriteLine("Invalid name.");
+            return;
+        }
 
         Console.Write("Enter product price: ");
         if (!decimal.TryParse(Console.ReadLine(), out decimal price))
@@ -187,12 +206,9 @@ public class Program
         }
 
         service.AddProduct(name, price);
-        SaveProducts(path, service.GetAllProducts());
+        SaveToJson(path, service.GetAllProducts());
     }
 
-    // =========================
-    // READ
-    // =========================
     static void ReadProducts(IProductService service)
     {
         var products = service.GetAllProducts();
@@ -203,9 +219,6 @@ public class Program
         }
     }
 
-    // =========================
-    // UPDATE (PATCH STYLE)
-    // =========================
     static void UpdateProduct(IProductService service, string path)
     {
         Console.Write("Enter product id: ");
@@ -215,12 +228,11 @@ public class Program
             return;
         }
 
-        Console.Write("Enter new name (or press Enter to skip): ");
+        Console.Write("Enter new name (or Enter to skip): ");
         string? name = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(name))
-            name = null;
+        if (string.IsNullOrWhiteSpace(name)) name = null;
 
-        Console.Write("Enter new price (or press Enter to skip): ");
+        Console.Write("Enter new price (or Enter to skip): ");
         string priceInput = Console.ReadLine();
 
         decimal? price = null;
@@ -237,12 +249,9 @@ public class Program
         }
 
         service.UpdateProduct(id, name, price);
-        SaveProducts(path, service.GetAllProducts());
+        SaveToJson(path, service.GetAllProducts());
     }
 
-    // =========================
-    // DELETE
-    // =========================
     static void DeleteProduct(IProductService service, string path)
     {
         Console.Write("Enter product id: ");
@@ -253,41 +262,31 @@ public class Program
         }
 
         service.DeleteProduct(id);
-        SaveProducts(path, service.GetAllProducts());
+        SaveToJson(path, service.GetAllProducts());
     }
 
     // =========================
-    // JSON HELPERS
+    // GENERIC JSON HELPERS (✔ refactor)
     // =========================
-    static List<Product> LoadProducts(string path)
+
+    static List<T> LoadFromJson<T>(string path)
     {
         if (!File.Exists(path))
-            return new List<Product>();
+            return new List<T>();
 
         string json = File.ReadAllText(path);
 
-        return JsonSerializer.Deserialize<List<Product>>(json) ?? new List<Product>();
-    }
-    static List<Account> LoadAccounts(string path)
-    {
-        if (!File.Exists(path))
-            return new List<Account>();
-
-        string json = File.ReadAllText(path);
-
-        return JsonSerializer.Deserialize<List<Account>>(json) ?? new List<Account>();
+        return JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
     }
 
-    static void SaveProducts(string path, IEnumerable<Product> products)
+    static void SaveToJson<T>(string path, IEnumerable<T> data)
     {
         var options = new JsonSerializerOptions
         {
             WriteIndented = true
         };
 
-        string json = JsonSerializer.Serialize(products, options);
+        string json = JsonSerializer.Serialize(data, options);
         File.WriteAllText(path, json);
     }
 }
-
-
