@@ -4,14 +4,38 @@ public class Program
 {
     public static void Main()
     {
+
         // Ξεκινάμε με authentication
-        bool isAuthenticated = Authentication_Simulation();
+        //bool isAuthenticated = AuthenticationSimulation();
 
         // Μόνο αν κάνει login μπαίνει στο σύστημα προϊόντων
+        /*
         if (isAuthenticated)
         {
             StartMenu();
+        }*/
+        Routing();
+
+    }
+
+    public static void Routing()
+    {
+        string path = Path.Combine(AppContext.BaseDirectory, "Products.json");
+        List<Product> productList = LoadFromJson<Product>(path);
+        IProductRepository repository = new InMemoryProductRepository();
+
+        // Φορτώνουμε δεδομένα στο repository
+        foreach (var item in productList)
+        {
+            repository.Add(item);
         }
+
+        IProductService productService = new ProductService(repository);
+        Router router = new Router();
+        router.RegisterGet("GET /products", productService.GetAllProducts);
+        router.ExecuteGet("GET /products");
+        router.RegisterGetId("GET /products/{id}", productService.GetProductById);
+        router.ExecuteGetId("GET /products/3");
     }
 
     static void StartMenu()
@@ -72,7 +96,7 @@ public class Program
         }
     }
 
-    static bool Authentication_Simulation()
+    static bool AuthenticationSimulation()
     {
         string path = Path.Combine(AppContext.BaseDirectory, "Accounts.json");
         List<Account> accountList = LoadFromJson<Account>(path);
@@ -138,7 +162,7 @@ public class Program
         }
 
         Console.WriteLine("Give a Password:");
-        string? password = Console.ReadLine();
+        string password = ReadPassword();
 
         if (string.IsNullOrWhiteSpace(password))
         {
@@ -162,7 +186,7 @@ public class Program
         string? username = Console.ReadLine();
 
         Console.WriteLine("Give a Password:");
-        string? password = Console.ReadLine();
+        string password = ReadPassword();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
@@ -212,6 +236,7 @@ public class Program
     static void ReadProducts(IProductService service)
     {
         var products = service.GetAllProducts();
+        if (!products.Any()) { Console.WriteLine("No Products in Repository."); return; }
 
         foreach (var p in products)
         {
@@ -288,5 +313,19 @@ public class Program
 
         string json = JsonSerializer.Serialize(data, options);
         File.WriteAllText(path, json);
+    }
+    static string ReadPassword()
+    {
+        var pass = new System.Text.StringBuilder();
+        ConsoleKeyInfo key;
+        while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+        {
+            if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
+                pass.Remove(pass.Length - 1, 1);
+            else if (key.Key != ConsoleKey.Backspace)
+                pass.Append(key.KeyChar);
+        }
+        Console.WriteLine();
+        return pass.ToString();
     }
 }

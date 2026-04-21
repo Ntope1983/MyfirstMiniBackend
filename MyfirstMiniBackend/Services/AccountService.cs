@@ -13,9 +13,8 @@ public class AccountService : IAccountService
 
     public void AddAccount(string username, string password)
     {
-        int id = _repository.GetAccounts().Any()
-            ? _repository.GetAccounts().Max(p => p.AccountId) + 1
-            : 1;
+        var accounts = _repository.GetAccounts().ToList();
+        int id = accounts.Any() ? accounts.Max(p => p.AccountId) + 1 : 1;
 
         var account = new Account(id, username, password);
         _repository.Add(account);
